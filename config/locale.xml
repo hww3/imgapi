@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<project name="imgapi">
+ <baselang>eng</baselang>
+ <xmlpath>translations/%L/imgapi.xml</xmlpath>
+ <nocopy/>
+</project>
