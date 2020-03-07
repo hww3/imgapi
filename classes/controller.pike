@@ -10,6 +10,7 @@ protected void create(object application)
 {
   ::create(application);
   images = load_controller("images_controller");
+  before_filter(app->get_and_head_only);
 }
 
 void index(object id, object response, mixed ... args)

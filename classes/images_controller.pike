@@ -8,11 +8,12 @@ constant __index_directly = 1;
 protected void create(object application)
 {
   ::create(application);
+  before_filter(app->get_and_head_only);
 }
 
 void index(object id, object response, mixed ... args)
 {
-werror("index(%O, %O, %O)\n", id, response, args);
+//werror("index(%O, %O, %O)\n", id, response, args);
   if(sizeof(args) == 0) {
     generate_index(id, response);
     return;
