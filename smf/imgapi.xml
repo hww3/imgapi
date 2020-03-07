@@ -1,0 +1,57 @@
+
+<service_bundle type='manifest' name='imgapi'>
+
+<service
+        name='application/imgapi'
+        type='service'
+        version='1'>
+
+        <create_default_instance enabled='false' />
+
+        <single_instance />
+
+        <dependency
+            name='startup_req'
+            grouping='require_all'
+            restart_on='none'
+            type='service'>
+                <service_fmri value='svc:/milestone/network' />
+        </dependency>
+
+        <exec_method
+            type='method'
+            name='start'
+            exec='/data/imgapi/bin/start -p80 -d /data/images'
+            timeout_seconds='0'>
+        <method_context>
+                <method_environment>
+                        <envvar name='PATH' value='/opt/local/bin:/usr/bin:/bin'/>
+                        <envvar name='FINS_HOME' value='/data/fins'/>
+                </method_environment>
+        </method_context>
+        </exec_method>
+        <exec_method
+            type='method'
+            name='stop'
+            exec=':kill'
+            timeout_seconds='60' />
+
+        <stability value='Evolving' />
+
+        <template>
+                <common_name>
+                        <loctext xml:lang='C'>
+                                Bare-bones IMGAPI service
+                        </loctext>
+                </common_name>
+
+                <documentation>
+                        <manpage
+                            title='imgapi'
+                            section='1M'
+                            manpath='/usr/share/man' />
+                </documentation>
+        </template>
+</service>
+
+</service_bundle>
