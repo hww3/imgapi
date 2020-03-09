@@ -75,24 +75,33 @@ protected void get_file(object id, object response, string uuid) {
   response->set_type("application/gzip");
 }
 
-protected void generate_index(object id, object response) 
-{
+protected array get_manifests() {
+  if(app->images) return app->images;
+
   ADT.List list = ADT.List();
   string datadir = app->data_dir;
   foreach(glob("*.json", get_dir(datadir));; string fn) {
-    list->append(Standards.JSON.decode(Stdio.read_file(Stdio.append_path(datadir, fn))));    
-  }
-  
-  response->set_data(Standards.JSON.encode((array)list));
+    mixed json;
+    mixed err = catch(json = Standards.JSON.decode(Stdio.read_file(Stdio.append_path(datadir, fn))));
+
+    if(err) 
+      werror("Error parsing JSON from file " + fn + ": " + Error.mkerror(err)->message());
+    else if(json) 
+      list->append(json + (["_fn": fn[..<5] ]));
+  } 
+  return (app->images=(array)list);
+}
+
+protected void generate_index(object id, object response) 
+{
+  response->set_data(Standards.JSON.encode(get_manifests()));
   response->set_type("application/json");
 }
 
 protected mapping find_manifest(object uuid) {
-    ADT.List list = ADT.List();
-  string datadir = app->data_dir;
-  foreach(glob("*.json", get_dir(datadir));; string fn) {
-    mixed manifest = Standards.JSON.decode(Stdio.read_file(Stdio.append_path(datadir, fn)));
-    if(manifest && manifest->uuid == (string)uuid) return manifest + (["_fn": fn[..<5] ]);
+
+  foreach(get_manifests();; mixed manifest) {
+     if(manifest && manifest->uuid == (string)uuid) return manifest;
   }
 
   return 0;
