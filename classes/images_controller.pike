@@ -38,7 +38,7 @@ void index(object id, object response, mixed ... args)
 protected void get_manifest(object id, object response, string uuid) {
   Standards.UUID.UUID u = Standards.UUID.UUID(uuid);
 
-  mixed manifest = find_manifest(u);
+  mixed manifest = app->find_manifest(u);
 
   if(!manifest) {
     response->not_found(uuid);
@@ -54,55 +54,27 @@ protected void get_manifest(object id, object response, string uuid) {
 }
 
 protected void get_file(object id, object response, string uuid) {
-    Standards.UUID.UUID u = Standards.UUID.UUID(uuid);
-
-  mixed manifest = find_manifest(u);
-
-  if(!manifest) {
-    response->not_found(uuid);
+  Standards.UUID.UUID u = Standards.UUID.UUID(uuid);
+  if(!u) {
+    response->bad_request("Invalid UUID");
     return;
   }
-
-  string datadir = app->data_dir;
-  string fn = Stdio.append_path(datadir, manifest->_fn + ".zfs.gz");
-  if(!file_stat(fn)) {
+  
+  Stdio.File file = app->get_file(u);
+  
+  if(!file)
+  {
     response->not_found(uuid + "/file");
     return;
   }
-
-  Stdio.File file = Stdio.File(fn, "r");
+  
   response->set_file(file);
   response->set_type("application/gzip");
 }
 
-protected array get_manifests() {
-  if(app->images) return app->images;
-
-  ADT.List list = ADT.List();
-  string datadir = app->data_dir;
-  foreach(glob("*.json", get_dir(datadir));; string fn) {
-    mixed json;
-    mixed err = catch(json = Standards.JSON.decode(Stdio.read_file(Stdio.append_path(datadir, fn))));
-
-    if(err) 
-      werror("Error parsing JSON from file " + fn + ": " + Error.mkerror(err)->message());
-    else if(json) 
-      list->append(json + (["_fn": fn[..<5] ]));
-  } 
-  return (app->images=(array)list);
-}
 
 protected void generate_index(object id, object response) 
 {
-  response->set_data(Standards.JSON.encode(get_manifests()));
+  response->set_data(Standards.JSON.encode(app->get_manifests()));
   response->set_type("application/json");
-}
-
-protected mapping find_manifest(object uuid) {
-
-  foreach(get_manifests();; mixed manifest) {
-     if(manifest && manifest->uuid == (string)uuid) return manifest;
-  }
-
-  return 0;
 }

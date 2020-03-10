@@ -38,6 +38,52 @@ int get_and_head_only(object request, object response, mixed ... args)
   return 0;
 }
 
+Stdio.File get_file(object uuid) {
+
+  mixed manifest = find_manifest(uuid);
+
+  if(!manifest) {
+    werror("Unable to find manifest for uuid " + uuid + "\n");
+    return 0;
+  }
+
+  string datadir = data_dir;
+  string fn = Stdio.append_path(datadir, manifest->_fn + ".zfs.gz");
+  if(!file_stat(fn)) {
+    werror("Unable to find " + manifest->_fn + ".zfs.gz\n");
+    return 0;
+  }
+
+  Stdio.File file = Stdio.File(fn, "r");
+  return file;
+}
+
+mapping find_manifest(object uuid) {
+
+  foreach(get_manifests();; mixed manifest) {
+     if(manifest && manifest->uuid == (string)uuid) return manifest;
+  }
+
+  return 0;
+}
+
+array get_manifests() {
+  if(images) return images;
+
+  ADT.List list = ADT.List();
+
+  foreach(glob("*.json", get_dir(data_dir));; string fn) {
+    mixed json;
+    mixed err = catch(json = Standards.JSON.decode(Stdio.read_file(Stdio.append_path(data_dir, fn))));
+
+    if(err) 
+      werror("Error parsing JSON from file " + fn + ": " + Error.mkerror(err)->message());
+    else if(json) 
+      list->append(json + (["_fn": fn[..<5] ]));
+  } 
+  return (images=(array)list);
+}
+
 class Monitor {
   inherit Filesystem.Monitor.symlinks;
 
