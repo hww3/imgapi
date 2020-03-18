@@ -27,9 +27,12 @@ void start()
 }
 
 void change_cb() {
-  images = 0;
+  clear_images();
 }
 
+void clear_images() {
+  images = 0;
+}
 
 int get_and_head_only(object request, object response, mixed ... args)
 {

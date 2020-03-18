@@ -13,6 +13,7 @@ protected void create(object application)
 
 void index(object id, object response, mixed ... args)
 {
+  if(id->variables->reload) app->clear_images();
 //werror("index(%O, %O, %O)\n", id, response, args);
   if(sizeof(args) == 0) {
     generate_index(id, response);
