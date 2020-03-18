@@ -47,8 +47,8 @@ Stdio.File get_file(object uuid) {
     return 0;
   }
 
-  string datadir = data_dir;
-  string fn = Stdio.append_path(datadir, manifest->_fn + ".zfs.gz");
+werror("manifest: %O\n", manifest);
+  string fn = Stdio.append_path(data_dir, manifest->_fn + ".zfs.gz");
   if(!file_stat(fn)) {
     werror("Unable to find " + manifest->_fn + ".zfs.gz\n");
     return 0;
@@ -61,7 +61,7 @@ Stdio.File get_file(object uuid) {
 mapping find_manifest(object uuid) {
 
   foreach(get_manifests();; mixed manifest) {
-     if(manifest && manifest->uuid == (string)uuid) return manifest;
+     if(manifest && manifest->uuid == (string)uuid) return manifest + ([]);
   }
 
   return 0;
